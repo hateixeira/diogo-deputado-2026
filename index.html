@@ -572,7 +572,32 @@
         padding: 6px 10px;
       }
     }
-  </style>
+  
+    /* Popup Customizado para o Mapa */
+    .leaflet-popup-content-wrapper {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.7) !important;
+      border-radius: 10px !important;
+      backdrop-filter: blur(10px) !important;
+    }
+    .leaflet-popup-tip {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    }
+    .leaflet-popup-content {
+      margin: 14px 14px 12px 14px !important;
+      line-height: 1.4 !important;
+    }
+    .leaflet-container a.leaflet-popup-close-button {
+      color: #94a3b8 !important;
+      padding: 6px !important;
+    }
+    .leaflet-container a.leaflet-popup-close-button:hover {
+      color: #fff !important;
+    }
+
+</style>
 </head>
 <body>
 
@@ -701,18 +726,36 @@
 
   <script>
     // Inicialização do Mapa
+    // Limites geográficos do Rio Grande do Sul
+    const rsBounds = L.latLngBounds([[-33.7516, -57.6432], [-27.0801, -49.6911]]);
+    const rsMaxBounds = L.latLngBounds([[-35.5, -60.0], [-25.2, -47.0]]);
+
+    // Inicialização do Mapa com travamento de zoom mínimo (não permite encolher além do RS) e zoom máximo amplo
     let map = L.map('map', {
       zoomControl: false,
-      attributionControl: false
-    }).setView([-30.1, -53.2], 7);
+      attributionControl: false,
+      minZoom: 6,
+      maxZoom: 15,
+      maxBounds: rsMaxBounds,
+      maxBoundsViscosity: 0.85
+    });
 
     // Adicionar controle de zoom no canto superior direito
     L.control.zoom({ position: 'topright' }).addTo(map);
 
     // Tiles escuros elegantes (CartoDB Dark Matter)
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd',
+    // Camada de Mapa Escuro Profissional (Esri World Dark Gray Canvas - Sem necessidade de API Key)
+    const baseLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+      minZoom: 6,
+      maxZoom: 16,
+      attribution: 'Esri, HERE, DeLorme, MapmyIndia'
+    }).addTo(map);
+
+    // Rótulos e limites sutis de referência
+    const refLayer = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+      minZoom: 6,
+      maxZoom: 16,
+      opacity: 0.75
     }).addTo(map);
 
     let geojsonLayer = null;
@@ -795,9 +838,15 @@
           layer.on({
             mouseover: highlightFeature,
             mouseout: resetHighlight,
-            click: function() {
+            click: function(e) {
               abrirDetalhesMunicipio(munName);
-              map.fitBounds(layer.getBounds(), { maxZoom: 12, padding: [30, 30] });
+              // Ajusta o mapa com padding adequado permitindo ver o município e a barra lateral
+              const isMobile = window.innerWidth <= 768;
+              const paddingOptions = isMobile ? [20, 20] : [20, 380];
+              map.fitBounds(layer.getBounds(), { maxZoom: 12, paddingTopLeft: [20, 20], paddingBottomRight: paddingOptions });
+              
+              // Gerar resumo rápido para Popup no mapa
+              abrirPopupResumo(layer, munName, votos, pct, e.latlng);
             }
           });
         }
@@ -807,7 +856,100 @@
     // Abertura do Sidebar e Detalhamento
     let currentMunDetails = null;
 
-    function abrirDetalhesMunicipio(munName) {
+    
+    // Popup com resumo das seções eleitorais diretamente no mapa ao clicar
+    function abrirPopupResumo(layer, munName, votos, pct, latlng) {
+      const norm = normalize(munName);
+      const detalhesMap = window.VOTOS_DETALHADOS || {};
+      let data = null;
+      for (let k in detalhesMap) {
+        if (normalize(k) === norm) {
+          data = detalhesMap[k];
+          break;
+        }
+      }
+
+      let content = `
+        <div style="font-family: 'Inter', sans-serif; color: #fff; min-width: 240px; max-width: 290px;">
+          <div style="display: flex; justify-content: space-between; align-items: baseline; border-bottom: 1px solid rgba(255,255,255,0.15); padding-bottom: 6px; margin-bottom: 8px;">
+            <strong style="font-size: 1rem; color: #f8fafc; font-family: 'Outfit', sans-serif;">${munName}</strong>
+            <span style="font-size: 0.75rem; color: #38bdf8; font-weight: 700;">${votos.toLocaleString('pt-BR')} votos</span>
+          </div>
+          <div style="font-size: 0.75rem; color: #94a3b8; margin-bottom: 8px;">
+            Representa <strong>${pct}%</strong> do total do deputado no RS.
+          </div>
+      `;
+
+      if (!data || data.votos === 0) {
+        content += `
+          <div style="font-size: 0.75rem; color: #cbd5e1; background: rgba(30,41,59,0.8); padding: 8px; border-radius: 6px; text-align: center;">
+            Nenhum voto computado neste município.
+          </div>
+        `;
+      } else {
+        // Coletar seções
+        let todasSecoes = [];
+        const zonasKeys = Object.keys(data.zonas || {});
+        zonasKeys.forEach(z => {
+          const locais = data.zonas[z].locais || {};
+          Object.keys(locais).forEach(l => {
+            (locais[l].secoes || []).forEach(s => {
+              todasSecoes.push({
+                secao: s.secao,
+                votos: s.votos,
+                local: locais[l].local_nome
+              });
+            });
+          });
+        });
+
+        // Ordenar seções por votos decrescente
+        todasSecoes.sort((a,b) => b.votos - a.votos);
+
+        content += `
+          <div style="font-size: 0.72rem; color: #e2e8f0; font-weight: 600; margin-bottom: 4px; display: flex; justify-content: space-between;">
+            <span>Seções Eleitorais (${todasSecoes.length}):</span>
+            <span style="color: #94a3b8; font-weight: 400;">Top votadas</span>
+          </div>
+          <div style="max-height: 140px; overflow-y: auto; background: rgba(15,23,42,0.85); border-radius: 6px; padding: 6px; border: 1px solid rgba(255,255,255,0.08); margin-bottom: 8px;">
+        `;
+
+        const limitShow = Math.min(todasSecoes.length, 8);
+        for (let i = 0; i < limitShow; i++) {
+          const s = todasSecoes[i];
+          content += `
+            <div style="display: flex; justify-content: space-between; font-size: 0.72rem; padding: 2px 0; border-bottom: 1px dashed rgba(255,255,255,0.06);">
+              <span style="color: #cbd5e1;">Seção <strong>${s.secao}</strong></span>
+              <span style="color: #38bdf8; font-weight: 700;">${s.votos} ${s.votos === 1 ? 'voto' : 'votos'}</span>
+            </div>
+          `;
+        }
+
+        if (todasSecoes.length > limitShow) {
+          content += `
+            <div style="font-size: 0.68rem; color: #94a3b8; text-align: center; margin-top: 4px;">
+              + ${todasSecoes.length - limitShow} outras seções detalhadas no painel lateral
+            </div>
+          `;
+        }
+
+        content += `</div>`;
+      }
+
+      content += `
+        <button onclick="document.getElementById('sidebar').classList.remove('hidden');" style="width: 100%; background: #2563eb; color: #fff; border: none; padding: 6px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px;">
+          <i class="fa-solid fa-list-check"></i> Ver Todas as Seções no Painel
+        </button>
+      </div>
+      `;
+
+      layer.bindPopup(content, {
+        className: 'leaflet-popup-custom',
+        maxWidth: 320
+      }).openPopup(latlng || layer.getBounds().getCenter());
+    }
+
+function abrirDetalhesMunicipio(munName) {
       const norm = normalize(munName);
       const detalhesMap = window.VOTOS_DETALHADOS || {};
       
@@ -957,9 +1099,17 @@
       focarCidade('BENTO GONÇALVES');
     }
 
-    function resetarVisao() {
-      map.setView([-30.1, -53.2], 7);
+    function ajustarVisaoRS() {
+      if (geojsonLayer) {
+        map.fitBounds(geojsonLayer.getBounds(), { padding: [15, 15] });
+      } else {
+        map.fitBounds(rsBounds, { padding: [15, 15] });
+      }
       fecharSidebar();
+    }
+
+    function resetarVisao() {
+      ajustarVisaoRS();
     }
 
     // Exportar Imagem em alta resolução usando html2canvas
@@ -995,11 +1145,11 @@
       }
     }
 
-    // Inicialização amigável: Focar Bento Gonçalves por padrão após carregamento
+    // Inicialização: Exibir o mapa completo do Rio Grande do Sul perfeitamente enquadrado na tela
     window.addEventListener('load', () => {
       setTimeout(() => {
-        focarBento();
-      }, 500);
+        ajustarVisaoRS();
+      }, 250);
     });
   </script>
 </body>
