@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Diogo Siqueira (PL 2244) | Eleições 2026 - Deputado Federal RS</title>
+  
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
+  <!-- Google Fonts & Font Awesome -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  
+  <!-- html2canvas para exportação de imagem -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+  <style>
+    :root {
+      --primary: #0b2545;
+      --primary-light: #134074;
+      --accent: #22c55e;
+      --accent-gold: #f59e0b;
+      --pl-blue: #002b7a;
+      --pl-yellow: #ffcc00;
+      --bg: #0f172a;
+      --card-bg: rgba(30, 41, 59, 0.85);
+      --card-border: rgba(255, 255, 255, 0.1);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #091a2f 0%, #0d2847 100%);
+      border-bottom: 1px solid var(--card-border);
+      padding: 10px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 1000;
+      flex-shrink: 0;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+    }
+
+    .brand-section {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .candidate-badge {
+      background: linear-gradient(135deg, #002b7a 0%, #1e3a8a 100%);
+      border: 2px solid var(--pl-yellow);
+      border-radius: 10px;
+      padding: 4px 10px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+    }
+
+    .candidate-badge .number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--pl-yellow);
+      letter-spacing: 0.5px;
+    }
+
+    .candidate-badge .party {
+      font-size: 0.65rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .candidate-info h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      letter-spacing: -0.2px;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .elected-tag {
+      background: #16a34a;
+      color: #fff;
+      font-size: 0.65rem;
+      padding: 2px 7px;
+      border-radius: 999px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .candidate-info p {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+      padding: 7px 12px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s ease;
+      backdrop-filter: blur(8px);
+    }
+
+    .btn:hover {
+      background: rgba(51, 65, 85, 0.9);
+      border-color: rgba(255, 255, 255, 0.25);
+      color: #fff;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      border: none;
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+    }
+
+    .btn-accent {
+      background: linear-gradient(135deg, #059669, #10b981);
+      border: none;
+      color: #fff;
+    }
+    .btn-accent:hover {
+      background: linear-gradient(135deg, #047857, #059669);
+    }
+
+    /* Layout Principal */
+    .main-container {
+      display: flex;
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+    }
+
+    #map-wrapper {
+      flex: 1;
+      height: 100%;
+      position: relative;
+      background: #0b1329;
+    }
+
+    #map {
+      width: 100%;
+      height: 100%;
+      background: #091322;
+    }
+
+    /* Sidebar / Drawer de Detalhes */
+    #sidebar {
+      width: 400px;
+      max-width: 100%;
+      background: rgba(15, 23, 42, 0.95);
+      backdrop-filter: blur(16px);
+      border-left: 1px solid var(--card-border);
+      display: flex;
+      flex-direction: column;
+      z-index: 1001;
+      transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      flex-shrink: 0;
+    }
+
+    #sidebar.hidden {
+      transform: translateX(100%);
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+    }
+
+    .sidebar-header {
+      padding: 16px;
+      background: rgba(30, 41, 59, 0.6);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      flex-shrink: 0;
+    }
+
+    .sidebar-header h2 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.2rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .sidebar-header p {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .close-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 1.2rem;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    .close-btn:hover {
+      color: #fff;
+    }
+
+    .sidebar-content {
+      padding: 16px;
+      overflow-y: auto;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* Cards Informativos */
+    .stat-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .stat-card.full-width {
+      grid-column: span 2;
+    }
+
+    .stat-card .label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .stat-card .value {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.35rem;
+      font-weight: 700;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .stat-card .subtext {
+      font-size: 0.72rem;
+      color: #38bdf8;
+      margin-top: 2px;
+    }
+
+    /* Busca de seções e filtros */
+    .search-box {
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      background: rgba(30, 41, 59, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 9px 12px 9px 34px;
+      color: #fff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+    .search-box input:focus {
+      border-color: #3b82f6;
+    }
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Listagem de Zonas e Seções */
+    .zone-block {
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      overflow: hidden;
+    }
+
+    .zone-header {
+      background: rgba(51, 65, 85, 0.4);
+      padding: 10px 14px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+      color: #e2e8f0;
+    }
+
+    .local-item {
+      padding: 10px 14px;
+      border-bottom: 1px solid rgba(255,255,255,0.05);
+    }
+    .local-item:last-child {
+      border-bottom: none;
+    }
+
+    .local-title {
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #f1f5f9;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .local-addr {
+      font-size: 0.7rem;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .secoes-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
+    }
+
+    .secao-pill {
+      background: rgba(15, 23, 42, 0.7);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 6px;
+      padding: 3px 8px;
+      font-size: 0.72rem;
+      color: #cbd5e1;
+    }
+
+    .secao-pill strong {
+      color: #38bdf8;
+    }
+
+    /* Controles Flutuantes no Mapa */
+    .map-floating-panel {
+      position: absolute;
+      top: 14px;
+      left: 14px;
+      z-index: 1000;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      max-width: 320px;
+    }
+
+    .summary-card {
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 12px 16px;
+      border-radius: 12px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    }
+
+    .summary-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .summary-number {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #38bdf8;
+      line-height: 1.1;
+      margin-top: 2px;
+    }
+
+    .summary-desc {
+      font-size: 0.75rem;
+      color: #cbd5e1;
+      margin-top: 4px;
+    }
+
+    /* Legenda */
+    .map-legend {
+      position: absolute;
+      bottom: 24px;
+      left: 14px;
+      z-index: 1000;
+      background: rgba(15, 23, 42, 0.88);
+      border: 1px solid var(--card-border);
+      backdrop-filter: blur(12px);
+      padding: 10px 14px;
+      border-radius: 10px;
+      font-size: 0.75rem;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+    }
+
+    .legend-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: #e2e8f0;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+    }
+
+    .legend-scale {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 3px;
+    }
+    .legend-color {
+      width: 14px;
+      height: 14px;
+      border-radius: 3px;
+      flex-shrink: 0;
+    }
+
+    /* Quick jump buttons */
+    .quick-jump {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-chip {
+      background: rgba(51, 65, 85, 0.8);
+      color: #e2e8f0;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      padding: 4px 8px;
+      border-radius: 6px;
+      font-size: 0.72rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+    .btn-chip:hover {
+      background: #2563eb;
+      color: #fff;
+    }
+
+    /* Tooltip Customizado */
+    .leaflet-tooltip-custom {
+      background: rgba(15, 23, 42, 0.95) !important;
+      border: 1px solid rgba(255, 255, 255, 0.2) !important;
+      color: #fff !important;
+      border-radius: 8px !important;
+      padding: 8px 12px !important;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.5) !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+    .leaflet-tooltip-custom:before {
+      display: none !important;
+    }
+
+    /* Modal de Exportação */
+    #export-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(4px);
+      z-index: 2000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+    .export-card {
+      background: #1e293b;
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 24px;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    /* Responsividade */
+    @media (max-width: 768px) {
+      header {
+        padding: 8px 12px;
+      }
+      .candidate-info h1 {
+        font-size: 0.95rem;
+      }
+      .candidate-badge .number {
+        font-size: 1.05rem;
+      }
+      .btn span {
+        display: none;
+      }
+      .btn {
+        padding: 7px 10px;
+      }
+
+      #sidebar {
+        width: 100%;
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        z-index: 1002;
+      }
+
+      .map-floating-panel {
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        max-width: none;
+      }
+
+      .map-legend {
+        bottom: 12px;
+        left: 10px;
+        padding: 6px 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="brand-section">
+      <div class="candidate-badge">
+        <span class="number">2244</span>
+        <span class="party">PL</span>
+      </div>
+      <div class="candidate-info">
+        <h1>
+          Diogo Siqueira
+          <span class="elected-tag"><i class="fa-solid fa-check"></i> Eleito</span>
+        </h1>
+        <p>Deputado Federal • Rio Grande do Sul • Eleições 2026</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" onclick="focarBento()" title="Focar Bento Gonçalves">
+        <i class="fa-solid fa-location-dot"></i>
+        <span>Bento Gonçalves</span>
+      </button>
+      <button class="btn btn-accent" onclick="exportarImagem()" id="btn-export" title="Exportar Mapa em Imagem">
+        <i class="fa-solid fa-camera"></i>
+        <span>Exportar Imagem</span>
+      </button>
+    </div>
+  </header>
+
+  <!-- Container Principal -->
+  <div class="main-container" id="capture-container">
+    
+    <!-- Mapa Leaflet -->
+    <div id="map-wrapper">
+      <div id="map"></div>
+
+      <!-- Resumo Flutuante -->
+      <div class="map-floating-panel">
+        <div class="summary-card">
+          <div class="summary-title">Total Oficial TSE (100% das Seções)</div>
+          <div class="summary-number">93.067</div>
+          <div class="summary-desc">
+            Votos nominais em <strong>438 municípios</strong> do RS.<br>
+            Principal colégio: <strong>Bento Gonçalves (32.315 votos)</strong>
+          </div>
+          <div class="quick-jump">
+            <span style="font-size: 0.68rem; color: #94a3b8; align-self: center; margin-right: 2px;">Atalhos:</span>
+            <button class="btn-chip" onclick="focarCidade('BENTO GONÇALVES')">Bento Gonçalves</button>
+            <button class="btn-chip" onclick="focarCidade('FARROUPILHA')">Farroupilha</button>
+            <button class="btn-chip" onclick="focarCidade('GARIBALDI')">Garibaldi</button>
+            <button class="btn-chip" onclick="focarCidade('CAXIAS DO SUL')">Caxias do Sul</button>
+            <button class="btn-chip" onclick="focarCidade('URUGUAIANA')">Uruguaiana</button>
+            <button class="btn-chip" onclick="resetarVisao()">Ver Todo o RS</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Legenda do Mapa -->
+      <div class="map-legend">
+        <div class="legend-title">Votos por Município</div>
+        <div class="legend-item"><div class="legend-color" style="background: #e11d48;"></div><span>> 10.000 (Base Central)</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #f97316;"></div><span>2.500 a 10.000</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #eab308;"></div><span>500 a 2.500</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #3b82f6;"></div><span>50 a 500</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #1e40af;"></div><span>1 a 50</span></div>
+        <div class="legend-item"><div class="legend-color" style="background: #1e293b; border: 1px solid #334155;"></div><span>0 votos</span></div>
+      </div>
+    </div>
+
+    <!-- Sidebar Lateral de Detalhes -->
+    <aside id="sidebar" class="hidden">
+      <div class="sidebar-header">
+        <div>
+          <h2 id="side-mun-name">Nome do Município</h2>
+          <p id="side-mun-sub">Detalhamento Oficial de Votação por Seção</p>
+        </div>
+        <button class="close-btn" onclick="fecharSidebar()" title="Fechar">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <div class="sidebar-content">
+        <!-- Indicadores Rápidos -->
+        <div class="stat-grid">
+          <div class="stat-card">
+            <span class="label">Votos na Cidade</span>
+            <span class="value" id="side-votos-total">0</span>
+            <span class="subtext" id="side-votos-pct">0% do total estadual</span>
+          </div>
+          <div class="stat-card">
+            <span class="label">Total de Zonas</span>
+            <span class="value" id="side-zonas-total">0</span>
+            <span class="subtext" id="side-secoes-total">0 seções apuradas</span>
+          </div>
+        </div>
+
+        <!-- Busca rápida de local / seção -->
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="sec-search-input" placeholder="Buscar colégio, bairro ou seção..." oninput="filtrarSecoes(this.value)">
+        </div>
+
+        <!-- Lista de Zonas e Seções -->
+        <div id="zonas-container" style="display: flex; flex-direction: column; gap: 10px;">
+          <!-- Renderizado via JavaScript -->
+        </div>
+      </div>
+    </aside>
+
+  </div>
+
+  <!-- Overlay de Exportação -->
+  <div id="export-overlay">
+    <div class="export-card">
+      <i class="fa-solid fa-spinner fa-spin" style="font-size: 2rem; color: #38bdf8; margin-bottom: 12px;"></i>
+      <h3 style="color: #fff; margin-bottom: 6px;">Gerando Imagem em Alta Resolução...</h3>
+      <p style="font-size: 0.85rem; color: #94a3b8;">Por favor aguarde um instante enquanto o mapa é capturado.</p>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <!-- Dados Pré-compilados do TSE -->
+  <script src="data.js"></script>
+
+  <script>
+    // Inicialização do Mapa
+    let map = L.map('map', {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([-30.1, -53.2], 7);
+
+    // Adicionar controle de zoom no canto superior direito
+    L.control.zoom({ position: 'topright' }).addTo(map);
+
+    // Tiles escuros elegantes (CartoDB Dark Matter)
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+      maxZoom: 18,
+      subdomains: 'abcd',
+    }).addTo(map);
+
+    let geojsonLayer = null;
+    let selectedMunicipio = null;
+    let municipioLayers = {};
+
+    // Cores de coropleta para o mapa
+    function getColor(votos) {
+      if (votos >= 10000) return '#e11d48'; // Rosa choque / Vermelho forte (Bento Gonçalves)
+      if (votos >= 2500)  return '#f97316'; // Laranja forte
+      if (votos >= 500)   return '#eab308'; // Amarelo dourado
+      if (votos >= 50)    return '#3b82f6'; // Azul vibrante
+      if (votos > 0)      return '#1e40af'; // Azul escuro
+      return '#1e293b';                     // Cinza ardósia (0 votos)
+    }
+
+    function styleFeature(feature) {
+      const votos = feature.properties.votos || 0;
+      return {
+        fillColor: getColor(votos),
+        weight: 1,
+        opacity: 0.8,
+        color: '#334155',
+        fillOpacity: votos > 0 ? 0.78 : 0.35
+      };
+    }
+
+    function highlightFeature(e) {
+      const layer = e.target;
+      layer.setStyle({
+        weight: 2.5,
+        color: '#38bdf8',
+        fillOpacity: 0.95
+      });
+      layer.bringToFront();
+    }
+
+    function resetHighlight(e) {
+      if (geojsonLayer) {
+        geojsonLayer.resetStyle(e.target);
+      }
+    }
+
+    // Normalização de texto para casar nomes
+    function normalize(text) {
+      if (!text) return '';
+      return text.toString()
+        .replace(/['\-]/g, ' ')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toUpperCase()
+        .trim();
+    }
+
+    // Carregar Camada GeoJSON
+    if (window.RS_GEOJSON) {
+      geojsonLayer = L.geoJSON(window.RS_GEOJSON, {
+        style: styleFeature,
+        onEachFeature: function(feature, layer) {
+          const props = feature.properties;
+          const munName = props.name || props.NM_MUN || props.nome;
+          const votos = props.votos || 0;
+          const pct = ((votos / 93067) * 100).toFixed(2);
+          
+          municipioLayers[normalize(munName)] = { layer: layer, feature: feature };
+
+          // Tooltip interativo
+          layer.bindTooltip(`
+            <div style="font-size: 0.85rem; font-weight: 700; color: #fff;">${munName}</div>
+            <div style="font-size: 0.8rem; color: #38bdf8; margin-top: 2px;">
+              <strong>${votos.toLocaleString('pt-BR')}</strong> votos (${pct}%)
+            </div>
+            <div style="font-size: 0.7rem; color: #94a3b8; margin-top: 2px;">Clique para ver por seção</div>
+          `, {
+            className: 'leaflet-tooltip-custom',
+            sticky: true,
+            direction: 'auto'
+          });
+
+          layer.on({
+            mouseover: highlightFeature,
+            mouseout: resetHighlight,
+            click: function() {
+              abrirDetalhesMunicipio(munName);
+              map.fitBounds(layer.getBounds(), { maxZoom: 12, padding: [30, 30] });
+            }
+          });
+        }
+      }).addTo(map);
+    }
+
+    // Abertura do Sidebar e Detalhamento
+    let currentMunDetails = null;
+
+    function abrirDetalhesMunicipio(munName) {
+      const norm = normalize(munName);
+      const detalhesMap = window.VOTOS_DETALHADOS || {};
+      
+      // Buscar dados no dicionário
+      let data = null;
+      for (let k in detalhesMap) {
+        if (normalize(k) === norm) {
+          data = detalhesMap[k];
+          break;
+        }
+      }
+
+      const sidebar = document.getElementById('sidebar');
+      sidebar.classList.remove('hidden');
+
+      document.getElementById('side-mun-name').innerText = munName;
+      document.getElementById('sec-search-input').value = '';
+
+      if (!data || data.votos === 0) {
+        document.getElementById('side-votos-total').innerText = '0';
+        document.getElementById('side-votos-pct').innerText = '0% do total estadual';
+        document.getElementById('side-zonas-total').innerText = '0';
+        document.getElementById('side-secoes-total').innerText = '0 seções';
+        document.getElementById('zonas-container').innerHTML = `
+          <div style="text-align: center; padding: 30px; color: #94a3b8; font-size: 0.85rem;">
+            Nenhum voto registrado para o candidato neste município.
+          </div>
+        `;
+        currentMunDetails = null;
+        return;
+      }
+
+      currentMunDetails = data;
+      const pct = ((data.votos / 93067) * 100).toFixed(2);
+      document.getElementById('side-votos-total').innerText = data.votos.toLocaleString('pt-BR');
+      document.getElementById('side-votos-pct').innerText = `${pct}% do total estadual (93.067)`;
+
+      const zonasKeys = Object.keys(data.zonas || {});
+      document.getElementById('side-zonas-total').innerText = zonasKeys.length;
+
+      let totalSecoes = 0;
+      zonasKeys.forEach(z => {
+        const locais = data.zonas[z].locais || {};
+        Object.keys(locais).forEach(l => {
+          totalSecoes += (locais[l].secoes || []).length;
+        });
+      });
+      document.getElementById('side-secoes-total').innerText = `${totalSecoes} seções com votos`;
+
+      renderizarZonas(data, '');
+    }
+
+    function renderizarZonas(data, filtro) {
+      const container = document.getElementById('zonas-container');
+      container.innerHTML = '';
+      filtro = normalize(filtro);
+
+      const zonasKeys = Object.keys(data.zonas || {});
+      let matchedCount = 0;
+
+      zonasKeys.forEach(zKey => {
+        const zona = data.zonas[zKey];
+        const locaisKeys = Object.keys(zona.locais || {});
+
+        let locaisHTML = '';
+
+        locaisKeys.forEach(lKey => {
+          const local = zona.locais[lKey];
+          const localNomeNorm = normalize(local.local_nome);
+          const localEndNorm = normalize(local.endereco);
+
+          // Filtrar por seção também
+          const secoesMatch = (local.secoes || []).filter(s => {
+            if (!filtro) return true;
+            return s.secao.toString().includes(filtro) ||
+                   localNomeNorm.includes(filtro) ||
+                   localEndNorm.includes(filtro);
+          });
+
+          if (secoesMatch.length > 0) {
+            matchedCount++;
+            const secoesPills = secoesMatch
+              .sort((a,b) => parseInt(a.secao) - parseInt(b.secao))
+              .map(s => `
+                <div class="secao-pill">
+                  Seção ${s.secao}: <strong>${s.votos} ${s.votos === 1 ? 'voto' : 'votos'}</strong>
+                </div>
+              `).join('');
+
+            locaisHTML += `
+              <div class="local-item">
+                <div class="local-title">
+                  <span><i class="fa-solid fa-school" style="color: #38bdf8; margin-right: 5px;"></i> ${local.local_nome}</span>
+                  <span style="color: #22c55e; font-weight: 700;">${local.votos} votos</span>
+                </div>
+                ${local.endereco ? `<div class="local-addr"><i class="fa-solid fa-location-dot" style="margin-right: 4px;"></i> ${local.endereco}</div>` : ''}
+                <div class="secoes-pills">
+                  ${secoesPills}
+                </div>
+              </div>
+            `;
+          }
+        });
+
+        if (locaisHTML) {
+          const zoneBlock = document.createElement('div');
+          zoneBlock.className = 'zone-block';
+          zoneBlock.innerHTML = `
+            <div class="zone-header">
+              <span><i class="fa-solid fa-landmark" style="margin-right: 6px;"></i> Zona Eleitoral ${zona.zona}</span>
+              <span style="color: #38bdf8;">${zona.votos} votos</span>
+            </div>
+            <div>${locaisHTML}</div>
+          `;
+          container.appendChild(zoneBlock);
+        }
+      });
+
+      if (matchedCount === 0) {
+        container.innerHTML = `
+          <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 0.85rem;">
+            Nenhuma seção ou colégio encontrado com o termo "${filtro}".
+          </div>
+        `;
+      }
+    }
+
+    function filtrarSecoes(valor) {
+      if (!currentMunDetails) return;
+      renderizarZonas(currentMunDetails, valor);
+    }
+
+    function fecharSidebar() {
+      document.getElementById('sidebar').classList.add('hidden');
+    }
+
+    function focarCidade(cidadeNome) {
+      const norm = normalize(cidadeNome);
+      const item = municipioLayers[norm];
+      if (item) {
+        map.fitBounds(item.layer.getBounds(), { maxZoom: 12, padding: [30, 30] });
+        abrirDetalhesMunicipio(cidadeNome);
+      }
+    }
+
+    function focarBento() {
+      focarCidade('BENTO GONÇALVES');
+    }
+
+    function resetarVisao() {
+      map.setView([-30.1, -53.2], 7);
+      fecharSidebar();
+    }
+
+    // Exportar Imagem em alta resolução usando html2canvas
+    async function exportarImagem() {
+      const overlay = document.getElementById('export-overlay');
+      overlay.style.display = 'flex';
+
+      try {
+        // Aguarda eventuais animações estabilizarem
+        await new Promise(r => setTimeout(r, 400));
+
+        const target = document.getElementById('capture-container');
+        const canvas = await html2canvas(target, {
+          useCORS: true,
+          scale: 2, // 2x para telas retina / alta qualidade
+          backgroundColor: '#0b1329',
+          logging: false
+        });
+
+        // Criação de link para download
+        const image = canvas.toDataURL('image/png');
+        const a = document.createElement('a');
+        const munName = document.getElementById('side-mun-name').innerText;
+        const sufixo = !document.getElementById('sidebar').classList.contains('hidden') ? `_${munName.replace(/\s+/g, '_')}` : '_Geral_RS';
+        a.download = `Diogo_Siqueira_Votacao_2026${sufixo}.png`;
+        a.href = image;
+        a.click();
+      } catch (err) {
+        console.error('Erro ao exportar imagem:', err);
+        alert('Não foi possível gerar a imagem automaticamente. Você pode tirar um print da tela.');
+      } finally {
+        overlay.style.display = 'none';
+      }
+    }
+
+    // Inicialização amigável: Focar Bento Gonçalves por padrão após carregamento
+    window.addEventListener('load', () => {
+      setTimeout(() => {
+        focarBento();
+      }, 500);
+    });
+  </script>
+</body>
+</html>
