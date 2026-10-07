@@ -39,7 +39,6 @@
       display: flex;
       flex-direction: column;
       height: 100vh;
-      height: 100dvh;
       overflow: hidden;
     }
 
@@ -47,7 +46,7 @@
     header.main-header {
       background: linear-gradient(135deg, #071426 0%, #0d233e 100%);
       border-bottom: 2px solid var(--gold);
-      padding: 8px 14px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -96,7 +95,7 @@
       background: rgba(255, 255, 255, 0.08);
       border: 1px solid var(--border-color);
       color: #ffffff;
-      padding: 6px 10px;
+      padding: 6px 12px;
       border-radius: 6px;
       font-size: 0.72rem;
       font-weight: 700;
@@ -136,6 +135,25 @@
       width: 100%;
       height: 100%;
       background: #09172a;
+    }
+
+    /* AVISO DE INTERAÇÃO MOBILE NO MAPA */
+    .map-touch-hint {
+      display: none;
+      position: absolute;
+      top: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(7, 19, 36, 0.88);
+      border: 1px solid var(--border-color);
+      color: var(--gold);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.65rem;
+      font-weight: 700;
+      z-index: 1000;
+      pointer-events: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
     }
 
     /* CARD FLUTUANTE ESQUERDO (DESKTOP) */
@@ -274,9 +292,7 @@
       text-align: center;
       transition: all 0.2s;
     }
-    .tab-item:hover {
-      color: #ffffff;
-    }
+    .tab-item:hover { color: #ffffff; }
     .tab-item.active {
       color: var(--gold);
       background: rgba(245, 158, 11, 0.1);
@@ -438,15 +454,13 @@
       font-size: 0.65rem;
       color: #cbd5e1;
     }
-    .sec-badge strong {
-      color: var(--gold);
-    }
+    .sec-badge strong { color: var(--gold); }
 
     /* FOOTER */
     footer.main-footer {
       background: #050e1a;
       border-top: 1px solid var(--border-color);
-      padding: 6px 14px;
+      padding: 6px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -479,86 +493,94 @@
       color: #cbd5e1;
     }
 
-    /* BOTÃO MOBILE PARA ABRIR PAINEL */
-    .mobile-drawer-toggle {
+    /* CARD RESUMO COMPACTO PARA MOBILE */
+    .mobile-summary-bar {
       display: none;
-      position: absolute;
-      bottom: 14px;
-      right: 14px;
-      z-index: 1002;
-      background: #0f274a;
+      background: #071426;
+      border-bottom: 1px solid var(--border-color);
+      padding: 6px 12px;
+      justify-content: space-around;
+      text-align: center;
+    }
+    .mobile-summary-item .num {
+      font-family: 'Bebas Neue', cursive;
+      font-size: 1.25rem;
       color: var(--gold);
-      border: 2px solid var(--gold);
-      padding: 9px 14px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 800;
-      box-shadow: 0 4px 15px rgba(0,0,0,0.6);
-      cursor: pointer;
-      align-items: center;
-      gap: 6px;
+      line-height: 1;
+    }
+    .mobile-summary-item .txt {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      font-weight: 700;
     }
 
-    /* RESPONSIVIDADE ESPECÍFICA PARA CELULAR (ANDROID / IOS) */
+    /* REGRAS RESPONSIVAS MOBILE (RESOLVE APRISIONAMENTO DE ROLAGEM) */
     @media (max-width: 768px) {
-      .brand-candidate .candidate-title { font-size: 1.4rem; }
-      .brand-candidate .candidate-num { font-size: 1.6rem; }
-      .brand-candidate .candidate-tag { display: none; }
-      
-      .action-btn span { display: none; }
-      .action-btn { padding: 6px 8px; }
-
-      /* No celular: O MAPA FICA 100% LIMPO E TOTALMENTE VISÍVEL */
-      .left-overlay {
-        display: none; /* Não obstrui a visão do mapa no mobile */
+      body {
+        height: auto !important;
+        min-height: 100vh !important;
+        overflow-y: auto !important; /* Permite rolagem nativa suave da página */
+        -webkit-overflow-scrolling: touch;
       }
 
-      .mobile-drawer-toggle {
-        display: inline-flex;
-      }
-
-      /* Painel lateral vira gaveta retrátil inferior (Bottom Sheet) */
-      aside.sidebar-panel {
-        position: absolute;
-        bottom: 0;
-        left: 0;
-        right: 0;
-        width: 100%;
-        height: 60vh;
-        max-height: 80vh;
-        border-radius: 16px 16px 0 0;
-        border-top: 2px solid var(--gold);
-        border-left: none;
-        box-shadow: 0 -10px 30px rgba(0,0,0,0.8);
-        transform: translateY(calc(100% - 44px)); /* Fica minimizado como barra inferior */
-        transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        z-index: 1005;
-      }
-
-      aside.sidebar-panel.expanded {
-        transform: translateY(0);
-      }
-
-      /* Barra de arraste no topo da gaveta mobile */
-      .drawer-handle {
-        width: 100%;
-        height: 24px;
-        background: #071426;
+      .mobile-summary-bar {
         display: flex;
-        align-items: center;
-        justify-content: center;
-        cursor: pointer;
-        flex-shrink: 0;
       }
-      .drawer-handle-bar {
-        width: 38px;
-        height: 4px;
-        background: #64748b;
-        border-radius: 999px;
+
+      .brand-candidate .candidate-title { font-size: 1.35rem; }
+      .brand-candidate .candidate-num { font-size: 1.55rem; }
+      .brand-candidate .candidate-tag { display: none; }
+      .action-btn span { display: none; }
+      .action-btn { padding: 5px 8px; }
+
+      .workspace {
+        flex-direction: column !important;
+        height: auto !important;
+        overflow: visible !important;
+      }
+
+      #map-wrapper {
+        height: 360px !important; /* Altura ideal que cabe o RS inteiro sem cobrir a tela */
+        min-height: 360px !important;
+        max-height: 400px !important;
+        margin: 8px 10px !important;
+        border-radius: 12px !important;
+        border: 1px solid var(--border-color) !important;
+        flex: none !important;
+      }
+
+      .map-touch-hint {
+        display: block;
+      }
+
+      .left-overlay {
+        display: none !important;
+      }
+
+      aside.sidebar-panel {
+        width: 100% !important;
+        height: auto !important;
+        border-left: none !important;
+        border-top: 2px solid var(--gold) !important;
+        box-shadow: none !important;
+        position: relative !important;
+      }
+
+      .tab-panel {
+        max-height: 480px; /* Rola internamente ou rola junto com a página */
       }
 
       footer.main-footer {
-        display: none; /* Dá espaço total ao mapa no celular */
+        flex-direction: column;
+        gap: 6px;
+        text-align: center;
+        padding: 10px;
+      }
+      .footer-stats {
+        justify-content: center;
+        flex-wrap: wrap;
+        font-size: 0.7rem;
       }
     }
   </style>
@@ -586,19 +608,37 @@
     </div>
   </header>
 
+  <!-- BARRA DE RESUMO MOBILE -->
+  <div class="mobile-summary-bar">
+    <div class="mobile-summary-item">
+      <div class="num">93.067</div>
+      <div class="txt">Votos no RS</div>
+    </div>
+    <div class="mobile-summary-item">
+      <div class="num">438</div>
+      <div class="txt">Cidades c/ Votos</div>
+    </div>
+    <div class="mobile-summary-item">
+      <div class="num">59</div>
+      <div class="txt">Sem Votos</div>
+    </div>
+    <div class="mobile-summary-item">
+      <div class="num">32.315</div>
+      <div class="txt">Bento Gonçalves</div>
+    </div>
+  </div>
+
   <!-- WORKSPACE -->
   <div class="workspace" id="capture-zone">
     
     <!-- MAPA -->
     <div id="map-wrapper">
+      <div class="map-touch-hint">
+        <i class="fa-solid fa-hand-pointer"></i> Toque na cidade para ver seções
+      </div>
       <div id="map"></div>
 
-      <!-- BOTÃO FLUTUANTE MOBILE -->
-      <button class="mobile-drawer-toggle" onclick="toggleDrawerMobile()">
-        <i class="fa-solid fa-chart-simple"></i> Ver Dados
-      </button>
-
-      <!-- FLUTUANTE ESQUERDO (Apenas Desktop para não cobrir o mobile) -->
+      <!-- FLUTUANTE ESQUERDO (Apenas Desktop) -->
       <div class="left-overlay">
         
         <div class="glass-card">
@@ -670,14 +710,8 @@
       </div>
     </div>
 
-    <!-- PAINEL LATERAL / GAVETA RETRÁTIL MOBILE -->
+    <!-- PAINEL LATERAL DIREITO -->
     <aside class="sidebar-panel" id="sidebar-panel">
-      
-      <!-- Puxador Mobile -->
-      <div class="drawer-handle" onclick="toggleDrawerMobile()">
-        <div class="drawer-handle-bar"></div>
-      </div>
-
       <div class="tabs-bar">
         <button class="tab-item active" onclick="trocarAba('cidades')" id="btn-tab-cidades">
           <i class="fa-solid fa-city"></i> CIDADES
@@ -793,11 +827,16 @@
     }
 
     // Inicialização do Mapa
+    // Em dispositivos móveis, desabilitamos o scrollWheelZoom para não prender a tela
+    const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
     map = L.map('map', {
       zoomControl: true,
       attributionControl: false,
       minZoom: 5,
-      maxZoom: 14
+      maxZoom: 14,
+      scrollWheelZoom: !isMobileDevice, // evita prender a rolagem do mouse/touch
+      dragging: true
     });
 
     if (window.RS_GEOJSON) {
@@ -840,9 +879,12 @@
             },
             click: function() {
               selecionarCidade(nome, true);
-              // No mobile, abre a gaveta de seções após o toque
+              // No mobile, rola a página suavemente até o painel de detalhes
               if (window.innerWidth <= 768) {
-                abrirDrawerMobile();
+                const sb = document.getElementById('sidebar-panel');
+                if (sb) {
+                  sb.scrollIntoView({ behavior: 'smooth' });
+                }
               }
             }
           });
@@ -851,24 +893,14 @@
 
       // Enquadramento inicial estrito em TODO O RS
       const bounds = geoLayer.getBounds();
-      map.fitBounds(bounds, { padding: [10, 10] });
+      map.fitBounds(bounds, { padding: isMobileDevice ? [5, 5] : [15, 15] });
       map.setMaxBounds(bounds.pad(0.08));
     }
 
     function verTodoORS() {
       if (geoLayer) {
-        map.fitBounds(geoLayer.getBounds(), { padding: [10, 10] });
+        map.fitBounds(geoLayer.getBounds(), { padding: isMobileDevice ? [5, 5] : [15, 15] });
       }
-    }
-
-    // Toggle da Gaveta no Mobile
-    function toggleDrawerMobile() {
-      const drawer = document.getElementById('sidebar-panel');
-      drawer.classList.toggle('expanded');
-    }
-    function abrirDrawerMobile() {
-      const drawer = document.getElementById('sidebar-panel');
-      drawer.classList.add('expanded');
     }
 
     function trocarAba(aba) {
@@ -924,7 +956,8 @@
       tr.onclick = () => {
         selecionarCidade(c.nome, true);
         if (window.innerWidth <= 768) {
-          abrirDrawerMobile();
+          const mapEl = document.getElementById('map-wrapper');
+          if (mapEl) mapEl.scrollIntoView({ behavior: 'smooth' });
         }
       };
       cTbody.appendChild(tr);
@@ -989,7 +1022,7 @@
       if (focarNoMapa) {
         const item = layersDict[norm];
         if (item) {
-          map.fitBounds(item.layer.getBounds(), { maxZoom: 12, padding: [30, 30] });
+          map.fitBounds(item.layer.getBounds(), { maxZoom: 12, padding: [25, 25] });
         }
       }
     }
@@ -1043,11 +1076,11 @@
       renderizarLocais(currentCityData, val);
     }
 
-    // Inicialização: Bento pré-carregado mas com mapa em todo o RS
+    // Inicialização
     selecionarCidade('BENTO GONÇALVES', false);
     trocarAba('cidades');
 
-    // Exportação
+    // Exportação em Imagem
     async function exportarImagem() {
       const btn = document.querySelector('.btn-export');
       const originalHtml = btn.innerHTML;
