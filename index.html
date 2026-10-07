@@ -305,13 +305,13 @@
       flex: 1;
       height: 100%;
       position: relative;
-      background: #bfdbfe;
+      background: #cbd5e1;
     }
 
     #map {
       width: 100%;
       height: 100%;
-      background: #c7d9ec;
+      background: #cbd5e1;
     }
 
     /* CALLOUTS ESTILO ARTE */
@@ -853,17 +853,13 @@
       return '#e2e8f0';                   // 0 votos (Cinza claro)
     }
 
-    // Inicialização do Mapa Leaflet
+    // Inicialização do Mapa Leaflet sem serviços externos ou exigência de API Key
     const map = L.map('map', {
       zoomControl: true,
-      attributionControl: false
-    }).setView([-30.0, -53.5], 7);
-
-    // Fundo limpo suave
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_nolabels/{z}/{x}/{y}{r}.png', {
-      maxZoom: 18,
-      subdomains: 'abcd'
-    }).addTo(map);
+      attributionControl: false,
+      minZoom: 6,
+      maxZoom: 14
+    });
 
     let geoLayer = null;
     let layersDict = {};
@@ -939,6 +935,11 @@
           });
         }
       }).addTo(map);
+
+      // Enquadrar estritamente no território do Rio Grande do Sul e restringir limites
+      const boundsRS = geoLayer.getBounds();
+      map.fitBounds(boundsRS, { padding: [15, 15] });
+      map.setMaxBounds(boundsRS.pad(0.05));
 
       // Adicionar callouts permanentes para as cidades chave conforme a imagem da arte
       const destaquesArte = [
